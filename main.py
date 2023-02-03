@@ -68,6 +68,7 @@ class Paddle(GameObject):
                                        x + self.width / 2,
                                        y + self.height / 2,
                                        fill='yellow')
+
         super(Paddle, self).__init__(canvas, item)
 
     def set_ball(self, ball):
@@ -95,6 +96,8 @@ class Brick(GameObject):
                                        x + self.width / 2,
                                        y + self.height / 2,
                                        fill=color, tags='brick')
+        text = canvas.create_text(x,y, text="Hello, World!", font=("Arial", 10))
+
         super(Brick, self).__init__(canvas, item)
 
     def hit(self):
@@ -111,8 +114,8 @@ class Game(tk.Frame):
         super(Game, self).__init__(master)
 
         self.lives = 3
-        self.width = 610
-        self.height = 400
+        self.width = 1000
+        self.height = 700
         self.canvas = tk.Canvas(self, bg='#aaaaff', width=self.width, height=self.height,)
         self.canvas.pack()
         self.pack()
