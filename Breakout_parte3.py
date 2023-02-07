@@ -3,7 +3,7 @@ import numpy as np
 import yolov5
 
 model = yolov5.load('../yolov5n.pt')
-model.conf = 0.33
+model.conf = 0.60
 
 def cv_setup(game):
     cv_init(game)
@@ -64,9 +64,9 @@ def cv_process(game, image):
                             thickness=1)
 
                 if x > 250:
-                    game.paddle.move(10)
+                    game.paddle.move(20)
                 elif x < 250:
-                    game.paddle.move(-10)
+                    game.paddle.move(-20)
                 else:
                     game.paddle.move(0)
 
