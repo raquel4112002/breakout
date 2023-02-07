@@ -1,5 +1,5 @@
 import tkinter as tk
-from Breakout_parte1 import *
+from Breakout_parte3 import *
 
 
 class GameObject(object):
