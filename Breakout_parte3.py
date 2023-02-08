@@ -4,6 +4,8 @@ import yolov5
 
 model = yolov5.load('../yolov5n.pt')
 model.conf = 0.60
+focal_length = 800 # Distância focal em pixels
+person_height = 1.7 # Altura real da pessoa em metros
 
 def cv_setup(game):
     cv_init(game)
@@ -35,6 +37,7 @@ def cv_process(game, image):
     results = model(imageRGB)
     output = image.copy()
 
+
     for pred in enumerate(results.pred):
         im = pred[0]
         im_boxes = pred[1]
@@ -49,6 +52,8 @@ def cv_process(game, image):
             pt2 = np.array(np.round((float(box[2]), float(box[3]))), dtype=int)
             box_color = (255, 0, 0)
             if results.names[box_class] == 'person':
+                distance = (focal_length * person_height) / h
+            if distance <= 3:
                 text = "{}:{:.2f}".format(results.names[box_class], conf)
                 cv2.rectangle(img=output,
                               pt1=pt1,
