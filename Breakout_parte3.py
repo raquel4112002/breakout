@@ -5,7 +5,7 @@ import yolov5
 model = yolov5.load('../yolov5n.pt')
 model.conf = 0.60
 focal_length = 800 # Distância focal em pixels
-person_height = 1.7 # Altura real da pessoa em metros
+person_height = 1.5 # Altura real da pessoa em metros
 
 def cv_setup(game):
     cv_init(game)
@@ -39,43 +39,54 @@ def cv_process(game, image):
 
 
     for pred in enumerate(results.pred):
-        im = pred[0]
-        im_boxes = pred[1]
-        for *box, conf, cls in im_boxes:
-            box_class = int(cls)
-            conf = float(conf)
-            x = float(box[0])
-            y = float(box[1])
-            w = float(box[2]) - x
-            h = float(box[3]) - y
-            pt1 = np.array(np.round((float(box[0]), float(box[1]))), dtype=int)
-            pt2 = np.array(np.round((float(box[2]), float(box[3]))), dtype=int)
-            box_color = (255, 0, 0)
-            if results.names[box_class] == 'person':
-                distance = (focal_length * person_height) / h
-            if distance <= 3:
-                text = "{}:{:.2f}".format(results.names[box_class], conf)
-                cv2.rectangle(img=output,
-                              pt1=pt1,
-                              pt2=pt2,
-                              color=box_color,
-                              thickness=1)
-                cv2.putText(img=output,
-                            text=text,
-                            org=np.array(np.round((float(box[0]), float(box[1] - 1))), dtype=int),
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                            fontScale=0.5,
-                            color=box_color,
-                            thickness=1)
+        imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        results = model(imageRGB)
+        output = image.copy()
 
-                if x > 250:
-                    game.paddle.move(20)
-                elif x < 250:
-                    game.paddle.move(-20)
-                else:
-                    game.paddle.move(0)
+        person_detected = False  # adiciona uma variável para controlar se uma pessoa foi detectada a 3 metros de distância
 
-    cv2.imshow("YOLOv5", output)
+        for pred in enumerate(results.pred):
+            im = pred[0]
+            im_boxes = pred[1]
+            for *box, conf, cls in im_boxes:
+                box_class = int(cls)
+                conf = float(conf)
+                x = float(box[0])
+                y = float(box[1])
+                w = float(box[2]) - x
+                h = float(box[3]) - y
+                pt1 = np.array(np.round((float(box[0]), float(box[1]))), dtype=int)
+                pt2 = np.array(np.round((float(box[2]), float(box[3]))), dtype=int)
+                box_color = (255, 0, 0)
+                if results.names[box_class] == 'person':
+                    distance = (focal_length * person_height) / h
+                    if distance <= 3:
+                        person_detected = True  # seta a variável como True se uma pessoa for detectada a 3 metros de distância
+                        text = "{}:{:.2f}".format(results.names[box_class], conf)
+                        cv2.rectangle(img=output,
+                                      pt1=pt1,
+                                      pt2=pt2,
+                                      color=box_color,
+                                      thickness=1)
+                        cv2.putText(img=output,
+                                    text=text,
+                                    org=np.array(np.round((float(box[0]), float(box[1] - 1))), dtype=int),
+                                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                                    fontScale=0.5,
+                                    color=box_color,
+                                    thickness=1)
+
+                        if x > 250:
+                            game.paddle.move(20)
+                        elif x < 250:
+                            game.paddle.move(-20)
+                        else:
+                            game.paddle.move(0)
+
+        if not person_detected:  # adiciona a verificação para não mover o paddle se não houver pessoa detectada a 3 metros de distância
+            game.paddle.move(0)
+
+        cv2.imshow("YOLOv5", output)
 def cv_output(image):
         cv2.imshow("window", image)
 
